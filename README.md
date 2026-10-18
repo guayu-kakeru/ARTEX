@@ -11,6 +11,29 @@ AI 自主渗透测试系统（Go 后端 + Next.js 前端）
 
 ---
 
+## 生态工具：artex-mcp（让 AI 监控与控制 ARTEX）
+
+[`artex-mcp/`](artex-mcp/) 把 ARTEX 的 REST/SSE API 包装成标准 **MCP server**
+（Python 标准库实现，零第三方依赖），任何 MCP 客户端（DSH / Claude Desktop /
+Cline …）挂上后即可用自然语言：
+
+- **监控**：任务列表与状态、实时活动流（SSE）、漏洞发现、探索图、意图队列、
+  资产、后端日志、LLM 配置、审批门挂起项、红线扫描；
+- **控制**：创建任务、暂停/恢复、意图级暂停/取消、审批裁决、检查并安装新版本；
+- **安全**：`artex_watchdog.py` 红线看门狗实时审查 agent 的每条指令，命中规则
+  （破坏性命令/凭据窃取/数据外传/拖库/提权/域名黑名单）立即暂停任务并否决审批。
+
+```bash
+python artex-mcp/selftest_mock.py        # 自测（17/17 PASS，无需真实服务）
+python artex-mcp/selftest_watchdog.py    # 看门狗自测（8/8 PASS）
+```
+
+完整运维手册（启停、喂资产、建任务参数、危险命令防控、结果输出、FAQ）见
+[`artex-mcp/使用手册.md`](artex-mcp/使用手册.md)；工具细节见
+[`artex-mcp/README.md`](artex-mcp/README.md)。
+
+---
+
 ## 截图预览
 
 > 完整交互见[在线 Demo](https://artex-demo.vercel.app/)。
