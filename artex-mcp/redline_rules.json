@@ -1,0 +1,43 @@
+{
+  "_comment": "ARTEX 红线规则。pattern 是正则（默认大小写不敏感，可自带 (?i)）。action 可选 pause（命中即暂停任务）或 alert（只告警不暂停）。domain_blacklist 里出现任意域名即命中。改完重启看门狗生效。 | 黑名单域名仅被提及（如 JS 分析输出）= domain_mention_action(alert) 不暂停；附近 250 字符内出现访问构造（见 domain_access_pattern）= domain_action(pause)。区分「发现」与「实访问」，避免把静态分析里看到的域名当成真的在打而误停任务。",
+  "rules": [
+    {
+      "name": "破坏性命令",
+      "pattern": "(?i)(rm\\s+-rf|rm\\s+-fr|rmdir\\s+/s|del\\s+/[fq]\\b|format\\s+[a-z]:|mkfs\\.|mkfs\\s|dd\\s+if=|>\\s*/dev/sd|diskpart|shutdown\\s+|reboot|init\\s+0|halt\\b)",
+      "action": "pause"
+    },
+    {
+      "name": "凭据窃取/横向移动",
+      "pattern": "(?i)(mimikatz|sekurlsa|lsass|procdump|psexec|wmiexec|smbexec|atexec|impacket|hashdump|/etc/shadow|reg\\s+save\\s+hklm\\\\sam|net\\s+user\\s+.*\\/add)",
+      "action": "pause"
+    },
+    {
+      "name": "外联回弹/数据外传",
+      "pattern": "(?i)(nc\\s+-e\\s|ncat\\s+-e\\s|/dev/tcp/|bash\\s+-i|powershell\\s+-e\\s|base64\\s+-d\\s*\\|\\s*(nc|bash)|curl\\s+.*-T\\s|scp\\s+.*@|rsync\\s+.*@|wget\\s+.*--post-file)",
+      "action": "pause"
+    },
+    {
+      "name": "数据库直接拖库",
+      "pattern": "(?i)(mysqldump|pg_dump|mongodump|into\\s+outfile|select\\s+.*\\s+from\\s+.*information_schema)",
+      "action": "pause"
+    },
+    {
+      "name": "危险提权",
+      "pattern": "(?i)(chmod\\s+777|setuid|sudo\\s+su\\b|runas\\s+/user:administrator|icacls.*\\/grant.*everyone)",
+      "action": "pause"
+    }
+  ],
+  "domain_blacklist": [
+    "example.com",
+    "api.example.com",
+    "internal.example.net"
+  ],
+  "domain_blacklist_comment": "把【授权范围外】的生产/内网域名填进来：agent 命令里出现即按 domain_action 处理。示例里的三个是占位符，上线前换成你实际的防打歪闸清单。",
+  "domain_action": "pause",
+  "on_match": "pause",
+  "deny_pending_on_match": true,
+  "alert_log": "redline_alerts.log",
+  "webhook": "",
+  "domain_mention_action": "alert",
+  "domain_access_pattern": "(?i)(curl\\s|wget\\s|invoke-webrequest|iwr\\s|requests\\.(get|post|put|head|delete)|urlopen|httpx?\\.(get|post|request)|aiohttp|socket\\.(create_connection|gethostbyname)|nslookup|resolve-dnsname|test-netconnection|ncat|nc\\s+-|ping\\s|fetch\\(|xmlhttprequest|urllib\\.request)"
+}
